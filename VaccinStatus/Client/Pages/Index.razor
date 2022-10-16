@@ -1,0 +1,33 @@
+﻿@inject VaccinStatusClient client
+@page "/"
+
+<h1>Översikt</h1>
+@if(loading){
+    <Spinner />
+}
+else{
+    @foreach(var rapporteringsöversikt in rapporteringsöversikter){
+        <RapporteringsöversiktVy 
+            Kapacitetsstatus="kapacitetsstatusar.Single(p => p.VårdgivareId == rapporteringsöversikt.VårdgivareId)"
+            rapporteringsöversikt="rapporteringsöversikt"
+                          />
+    }
+}
+
+@code{
+    bool loading = true;
+    private Rapporteringsöversikt[] rapporteringsöversikter;
+    private Kapacitetsstatus[] kapacitetsstatusar;
+    protected override async Task OnInitializedAsync()
+    {
+        await GetRapporteringsöversikter();
+        await GetKapacitetsstatus();
+        loading = false;
+    }
+    public async Task GetRapporteringsöversikter(){
+        rapporteringsöversikter = await client.GetRapporteringsöversiktAsync();
+    }
+    public async Task GetKapacitetsstatus(){
+        kapacitetsstatusar = await client.GetKapacitetsstatusAsync();
+    }
+}

@@ -1,0 +1,54 @@
+﻿@page "/konfiguration/vardgivare"
+@inject VaccinStatusClient client
+<KonfigureraNav />
+<EditForm class="mt-4" Model="nyVårdgivare" OnValidSubmit="SkapaVårdgivare">
+    <div class="row">
+        <div class="col-8">
+            <InputText class="form-control" @bind-Value="nyVårdgivare.Namn" />
+        </div>
+        <div class="col-4">
+            <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-plus"></i>Spara</button>
+        </div>
+    </div>
+</EditForm>
+@if(loading){
+    <Spinner/>
+}
+else{
+    <table class="table">
+        <tbody>
+            @foreach (var vårdgivare in vårdgivares)
+            {
+                <tr>
+                    <td>@vårdgivare.Namn</td>
+                    <td>
+                        <button @onclick="() => RaderaVårdgivare(vårdgivare.VårdgivareId)" class="btn btn-outline-dark"><i class="bi bi-trash"></i></button>
+                        <button class="btn btn-outline-dark"><i class="bi bi-pencil-square"></i></button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    Vårdgivare nyVårdgivare = new();
+    Vårdgivare[] vårdgivares;
+    bool loading = true;
+    protected override async Task OnInitializedAsync()
+    {
+        await GetVårdgivareAsync();
+        loading = false;
+    }
+    public async Task GetVårdgivareAsync(){
+        vårdgivares = await client.GetVårdgivaresAsync();
+    }
+    public async Task RaderaVårdgivare(int VårdgivareId){
+        await client.DeleteVårdgivareAsync(VårdgivareId);
+        await GetVårdgivareAsync();
+    }
+    public async Task SkapaVårdgivare(){
+        await client.PostVårdgivaresAsync(nyVårdgivare);
+        await GetVårdgivareAsync();
+    }
+}

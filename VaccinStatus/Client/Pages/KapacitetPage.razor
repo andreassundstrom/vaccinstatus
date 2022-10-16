@@ -1,0 +1,68 @@
+﻿@inject VaccinStatusClient client
+@page "/registrera/kapacitet"
+<RegistreraNav />
+<EditForm OnValidSubmit="SkapaKapacitet" Model="nyKapacitet" class="card mt-2">
+    <div class="card-body">
+        <NyRegistreringFält Beskrivning="Vårdgivare">
+            <SelectVårdgivare @bind-Value="nyKapacitet.VårdgivareId" />
+        </NyRegistreringFält>
+        <NyRegistreringFält Beskrivning="Kapacitetsdatum">
+            <InputDate class="form-control" @bind-Value="nyKapacitet.Kapacitetsdatum" />
+        </NyRegistreringFält>
+        <NyRegistreringFält Beskrivning="Kapacitet (dos)">
+            <InputNumber class="form-control" @bind-Value="nyKapacitet.KapacitetDoser" />
+        </NyRegistreringFält>
+        <NyRegistreringFält>
+            <button class="btn btn-outline-primary float-end" type="submit">
+                <i class="bi bi-plus"></i>Spara
+            </button>
+        </NyRegistreringFält>
+    </div>
+</EditForm>
+@if(loading){
+    <Spinner></Spinner>
+}
+else{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Kapacitetsdatum</th>
+                <th>Vårdgivare</th>
+                <th>Kapacitet (doser)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var kapacitet in kapaciteter)
+            {
+                <tr>
+                    <td>@kapacitet.Vårdgivare.Namn</td>
+                    <td>@kapacitet.Kapacitetsdatum.ToString("d")</td>
+                    <td>@kapacitet.KapacitetDoser</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    private Kapacitet nyKapacitet = new() { Kapacitetsdatum = DateTime.Now};
+    private Kapacitet[] kapaciteter;
+    private bool loading = true;
+    protected override async Task OnInitializedAsync()
+    {
+        await GetKapaciteter();
+        loading = false;
+    }
+    private async Task GetKapaciteter(){
+        kapaciteter = await client.GetKapaciteter();
+    }
+    private async Task SkapaKapacitet(){
+        await client.PostKapacitet(nyKapacitet);
+        nyKapacitet = new()
+            {
+                Kapacitetsdatum = DateTime.Now
+            };
+        await GetKapaciteter();
+    }
+}

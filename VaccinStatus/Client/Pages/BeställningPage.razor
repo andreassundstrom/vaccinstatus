@@ -1,0 +1,79 @@
+﻿@inject VaccinStatusClient client
+@page "/registrera/bestallning"
+<RegistreraNav />
+<EditForm OnValidSubmit="SkapaBeställning" style="" class="card mt-4" Model="nyBeställning">
+    <div class="card-body">
+        <NyRegistreringFält Beskrivning="Vårdgivare">
+            <SelectVårdgivare @bind-Value="nyBeställning.VårdgivareId"></SelectVårdgivare>
+        </NyRegistreringFält>
+        <NyRegistreringFält Beskrivning="Beställningsdatum:">
+            <InputDate class="form-control" @bind-Value="nyBeställning.Beställningsdatum" />
+        </NyRegistreringFält>
+        <NyRegistreringFält Beskrivning="ÖnskatLeveransdatum:">
+            <InputDate class="form-control" @bind-Value="nyBeställning.ÖnskatLeveransdatum" />
+        </NyRegistreringFält>
+        <NyRegistreringFält Beskrivning="Mottagare (GLN):">
+            <InputText class="form-control" @bind-Value="nyBeställning.GlnMottagare" />
+        </NyRegistreringFält>
+        <NyRegistreringFält Beskrivning="Kvantitet dos">
+            <InputNumber class="form-control" @bind-Value="nyBeställning.KvantitetDos" />
+        </NyRegistreringFält>
+        <NyRegistreringFält>
+            <button class="float-end btn btn-outline-primary" type="submit"><i class="bi bi-plus"></i>Spara</button>
+        </NyRegistreringFält>
+    </div>
+</EditForm>
+@if(loading){
+    <Spinner />
+}
+else{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Beställningsdatum</th>
+                <th>Vårdgivare</th>
+                <th>Önskat leveransdatum</th>
+                <th>Mottagare (GLN)</th>
+                <th>Kvantitet dos</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var beställning in beställningar){
+                <tr>
+                    <td>@beställning.Beställningsdatum.ToString("d")</td>
+                    <td>@beställning.Vårdgivare.Namn</td>
+                    <td>@beställning.ÖnskatLeveransdatum.ToString("d")</td>
+                    <td>@beställning.GlnMottagare</td>
+                    <td>@beställning.KvantitetDos</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    public Beställning nyBeställning { get; set; } = new() { 
+        Beställningsdatum = DateTime.Now, 
+        ÖnskatLeveransdatum = DateTime.Now.AddDays(3) 
+    };
+    public Beställning[] beställningar;
+    bool loading = true;
+    protected override async Task OnInitializedAsync()
+    {
+        await GetBeställningar();
+        loading = false;
+    }
+    public async Task SkapaBeställning(){
+        await client.PostBeställning(nyBeställning);
+        nyBeställning = new()
+            {
+                Beställningsdatum = DateTime.Now,
+                ÖnskatLeveransdatum = DateTime.Now.AddDays(3)
+            };
+        await GetBeställningar();
+    }
+    public async Task GetBeställningar(){
+        beställningar = await client.GetBeställning();
+    }
+
+}

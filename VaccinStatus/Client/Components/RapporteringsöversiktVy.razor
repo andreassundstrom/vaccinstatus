@@ -1,0 +1,41 @@
+﻿<style>
+    .heading-expanding {
+        cursor:pointer;
+    }
+    .heading-expanding:hover{
+        color:#555;
+    }
+    .expanded{
+        height:100%;
+    }
+    .notexpanded{
+        height:0px;
+        overflow:hidden;
+    }
+</style>
+<h4 @onclick="changeExpanded" class="mt-4 heading-expanding"><i class="bi @expandChevronCss text-muted"></i> @rapporteringsöversikt.Vårdgivare</h4>
+<p>Aktuell kapacitet: @Kapacitetsstatus.KapacitetDoser doser <i class="text-muted">(@Kapacitetsstatus.Kapacitetsdatum?.ToString("d"))</i></p>
+<div class="row expanding @expandedCss" style="max-width:800px">
+    <RapporteringsöversiktElement värde="@rapporteringsöversikt.Beställning" beskrivning="Beställning" />
+    <RapporteringsöversiktElement värde="@rapporteringsöversikt.Förbrukning" beskrivning="Förbrukning" />
+    <RapporteringsöversiktElement värde="@rapporteringsöversikt.Inleverans" beskrivning="Inleverans" />
+    <RapporteringsöversiktElement värde="@rapporteringsöversikt.Kapacitet" beskrivning="Kapacitet" />
+    <RapporteringsöversiktElement värde="@rapporteringsöversikt.Lagersaldo" beskrivning="Lagersaldo" />
+</div>
+
+@code {
+    bool expanded = true;
+    private string expandChevronCss{ get{
+            return expanded ? "bi-chevron-double-down" : "bi-chevron-double-right";
+        } 
+    }
+    private void changeExpanded(){
+        expanded = !expanded;
+
+    }
+    private string expandedCss { get { return expanded ? "expanded" : "notexpanded"; } }
+    [Parameter]
+    public Rapporteringsöversikt rapporteringsöversikt{ get; set; }
+    [Parameter]
+    public Kapacitetsstatus Kapacitetsstatus { get; set; }
+}

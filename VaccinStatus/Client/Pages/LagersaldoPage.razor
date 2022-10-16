@@ -1,0 +1,90 @@
+﻿@inject VaccinStatusClient client
+@page "/registrera/lagersaldo"
+<RegistreraNav />
+@if(loading){
+    <Spinner />
+}
+else{
+<EditForm class="card mt-4"  Model="nyttLagerslaod" OnValidSubmit="SparaLagersaldo">
+    <div class="card-body">
+        <NyRegistreringFält Beskrivning="Vårdgivare">
+            <SelectVårdgivare @bind-Value="nyttLagerslaod.VårdgivareId" />
+        </NyRegistreringFält>
+        <NyRegistreringFält Beskrivning="Datum">
+                        <InputDate class="form-control" @bind-Value="nyttLagerslaod.Datum"></InputDate>
+
+        </NyRegistreringFält>
+        <NyRegistreringFält Beskrivning="Leverantör">
+                <InputSelect class="form-select" @bind-Value="nyttLagerslaod.LeverantörId">
+                    @foreach (var leverantör in leverantörer)
+                    {
+                        <option value="@leverantör.LeverantörId">@leverantör.Namn</option>
+                    }
+                </InputSelect>
+        </NyRegistreringFält>
+        <NyRegistreringFält Beskrivning="Kvantitet vial">
+                <InputNumber class="form-control" @bind-Value="nyttLagerslaod.KvantitetVial"></InputNumber>
+
+        </NyRegistreringFält>
+        <NyRegistreringFält Beskrivning="Kvantitet dos">
+                <InputNumber class="form-control" @bind-Value="nyttLagerslaod.KvantitetDos"></InputNumber>
+        </NyRegistreringFält>
+
+            <div class="mt-2 d-flex justify-content-end">
+                <div>
+                    <button type="submit" class="btn btn-outline-primary"><i class="bi bi-plus"></i> Spara</button>
+                </div>
+            </div>
+    </div>
+</EditForm>
+@if(lagersaldo != null){
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Vårdgivare</th>
+                <th>Leverantör</th>
+                <th>Kvantitet vial</th>
+                <th>Kvantitet dos</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var lagersaldoItem in lagersaldo){
+                <tr>
+                    <td>@lagersaldoItem.Datum.ToString("d")</td>
+                    <td>@lagersaldoItem.Vårdgivare.Namn</td>
+                    <td>@lagersaldoItem.Leverantör.Namn</td>
+                    <td>@lagersaldoItem.KvantitetVial</td>
+                    <td>@lagersaldoItem.KvantitetDos</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+}
+
+@code {
+    public bool loading = true;
+    Lagersaldo nyttLagerslaod = new(){ Datum = DateTime.Now.Date};
+    Leverantör[] leverantörer;
+    Lagersaldo[] lagersaldo;
+    protected override async Task OnInitializedAsync()
+    {
+        await GetLeverantörer();
+        await GetLagersaldo();
+        loading = false;
+    }
+
+    public async Task SparaLagersaldo(){
+        await client.PostLagerslado(nyttLagerslaod);
+        await GetLagersaldo();
+    }
+    public async Task GetLeverantörer(){
+        leverantörer = await client.GetLeverantörer();
+    }
+
+    public async Task GetLagersaldo()
+    {
+        lagersaldo = await client.GetLagersaldo();
+    }
+}

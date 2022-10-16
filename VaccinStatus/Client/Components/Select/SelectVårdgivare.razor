@@ -1,0 +1,42 @@
+﻿@using System.Diagnostics.CodeAnalysis
+@inherits InputBase<int>
+@inject VaccinStatusClient client
+    <InputSelect class="form-select" @bind-Value="HandleChange">
+        @if(vårdgivares != null)
+        {
+            <option value="0">Välj vårdgivare</option>
+            @foreach (var vårdgivare in vårdgivares)
+            {
+                <option value="@vårdgivare.VårdgivareId">@vårdgivare.Namn</option>
+            }
+        }
+    </InputSelect>
+
+
+@code {
+    private Vårdgivare[] vårdgivares;
+    protected override async Task OnInitializedAsync()
+    {
+        await GetVårdgivare();
+        StateHasChanged();
+    }
+    public int HandleChange{
+        get { return CurrentValue; } 
+        set { CurrentValue = value; }
+    }
+    private async Task GetVårdgivare(){
+        vårdgivares = await client.GetVårdgivaresAsync();
+
+    }
+    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out int result, [NotNullWhen(false)] out string validationErrorMessage)
+    {
+        result = Int32.Parse(value);
+        if(result == 0){
+            validationErrorMessage = "Välj en vårdgivare";
+        }else{
+            validationErrorMessage = null;
+        }
+        
+        return true;
+    }
+}

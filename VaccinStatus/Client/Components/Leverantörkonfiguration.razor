@@ -1,0 +1,59 @@
+﻿@inject VaccinStatusClient client
+@if(Leverantörer == null){
+    <p>Laddar...</p>
+}
+else {
+    <div class="card mt-4 mb-3">
+        <div class="card-header">
+            <h4 class="card-title">Ny leverantör</h4>
+        </div>
+        <div class="card-body">
+    <EditForm class="row" Model="@NyLeverantör" OnValidSubmit="SkapaNyLeverantör" >
+        <div class="col-3">
+        <label for="nyLeverantörNamn" class="col-form-label">Namn:</label>
+        </div>
+        <div class="col-6">
+        <InputText id="nyLeverantörNamn" class="form-control" @bind-Value=NyLeverantör.Namn></InputText>
+        </div>
+        <div class="col-3">
+        <button class="float-end btn btn-primary" type="submit">Skapa</button>
+        </div>
+    </EditForm>
+        </div>
+    </div>
+    <ul class="list-group">
+    @foreach(var leverantör in Leverantörer)
+    {
+        <li class="list-group-item d-flex align-content-center justify-content-between">
+                <div class="align-top">@leverantör.Namn</div>
+            <div>
+                    <button @onclick="() => TaBortLeverantör(leverantör.LeverantörId)" class="btn btn-outline-dark "><i class="bi bi-trash"></i></button>
+            </div>
+            </li>
+    }
+    </ul>
+    
+
+}
+@code {
+    public Leverantör[]? Leverantörer { get; set; }
+    public Leverantör NyLeverantör { get; set; } = new Leverantör();
+    protected override async Task OnInitializedAsync()
+    {
+        await HämtaLeverantörer();
+    }
+    private async Task HämtaLeverantörer()
+    {
+        Leverantörer = await client.GetLeverantörer();
+    }
+    private async Task TaBortLeverantör(int leverantörId){
+        await client.DeleteLeverantör(leverantörId);
+        await HämtaLeverantörer();
+    }
+    private async Task SkapaNyLeverantör()
+    {
+        await client.PostLeverantör(NyLeverantör);
+        NyLeverantör = new Leverantör();
+        await HämtaLeverantörer();
+    }
+}

@@ -1,0 +1,15 @@
+﻿<div class="col my-2" style="max-width:150px">
+<div class="card text-center" style="">
+        <div class="card-body">
+            <h2 class="text-center">@Värde</h2>
+            <p class="text-center mb-0"><small class="text-muted">@Beskrivning</small></p>
+        </div>
+    </div>
+</div>
+@code {
+    [Parameter]
+    public int Värde{ get; set; }
+    [Parameter]
+    public string Beskrivning { get; set; }
+
+}

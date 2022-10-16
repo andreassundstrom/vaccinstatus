@@ -1,0 +1,88 @@
+﻿@inject VaccinStatusClient client
+@page "/registrera/forbrukning"
+<RegistreraNav />
+@if(loading)
+{
+    <Spinner />
+}
+else
+{
+    <EditForm class="card mt-4" style="" Model="@nyFörbrukning" OnValidSubmit="SkapaFörbrukning">
+        <div class="card-body">
+            <NyRegistreringFält Beskrivning="Vårdgivare">
+                <SelectVårdgivare @bind-Value="nyFörbrukning.VårdgivareId" />
+            </NyRegistreringFält>
+            <NyRegistreringFält Beskrivning="Förbrukningsdatum">
+                <InputDate class="form-control" @bind-Value="nyFörbrukning.Förburkningsdatum"></InputDate>
+            </NyRegistreringFält>
+            <NyRegistreringFält Beskrivning="Leverantör">
+                <InputSelect class="form-select" @bind-Value="nyFörbrukning.LeverantörId">
+                    @foreach (var leverantör in Leverantörer)
+                    {
+                        <option value="@leverantör.LeverantörId">@leverantör.Namn</option>
+                    }
+                </InputSelect>
+            </NyRegistreringFält>
+            <NyRegistreringFält Beskrivning="Kvantitet">
+                <InputNumber class="form-control" @bind-Value="nyFörbrukning.KvantitetVial"></InputNumber>
+
+        </NyRegistreringFält>
+        <NyRegistreringFält Beskrivning="Registrerad av">
+                <InputText class="form-control" @bind-Value="nyFörbrukning.RegistreradAv"></InputText>
+        </NyRegistreringFält>
+        <NyRegistreringFält>
+                <button type="submit" class="float-end btn btn-outline-primary"><i class="bi bi-plus"></i> Spara</button>
+        </NyRegistreringFält>
+        </div>
+    </EditForm>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Vårdgivare</th>
+                <th>Leverantör</th>
+                <th>Kvantitet vial</th>
+                <th>Registrering</th>
+            </tr>
+        </thead>
+        <tbody>
+    @foreach(var förbrukning in förbrukningar)
+    {
+        <tr>
+            <td>@förbrukning.Förburkningsdatum.ToString("d")</td>
+            <td>@förbrukning.Vårdgivare.Namn</td>
+            <td>@förbrukning.Leverantör?.Namn</td>
+            <td>@förbrukning.KvantitetVial</td>
+                    <td>@förbrukning.RegistreradDatum (@förbrukning.RegistreradAv.ToString())</td>
+        </tr>
+    }
+    </tbody>
+    </table>
+}
+@code {
+    public Förbrukning nyFörbrukning { get; set; } = new Förbrukning() { Förburkningsdatum = DateTime.Now.Date};
+    public bool loading = true;
+    public Leverantör[] Leverantörer { get; set; }
+    public Förbrukning[] förbrukningar { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetLeverantörer();
+        await GetFörbrukningar();
+        loading = false;
+    }
+    public async Task GetLeverantörer()
+    {
+        Leverantörer = await client.GetLeverantörer();
+    }
+    public async Task GetFörbrukningar()
+    {
+        förbrukningar = await client.GetFörbrukningsAsync();
+    }
+    public async Task SkapaFörbrukning()
+    {
+        await client.PostFörbrukningAsync(nyFörbrukning);
+        nyFörbrukning = new Förbrukning(){Förburkningsdatum = DateTime.Now};
+        await GetFörbrukningar();
+    }
+}

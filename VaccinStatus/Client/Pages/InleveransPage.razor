@@ -1,0 +1,98 @@
+﻿@inject VaccinStatusClient client
+@page "/registrera/inleverans"
+<RegistreraNav></RegistreraNav>
+@if(loading)
+{
+    <Spinner />
+}
+else
+{
+    <EditForm class="card mt-4" style="" Model="nyInleverans" OnValidSubmit="SkapaInleverans">
+        <div class="card-body">
+            <NyRegistreringFält Beskrivning="Vårdgivare">
+                <SelectVårdgivare @bind-Value="nyInleverans.VårdgivareId" />
+            </NyRegistreringFält>
+            <NyRegistreringFält Beskrivning="Planerat lev datum">
+                <InputDate class="form-control" @bind-Value="nyInleverans.PlaneratLeveransdatum"></InputDate>
+            </NyRegistreringFält>
+            <NyRegistreringFält Beskrivning="Lev datum">
+                <InputDate class="form-control" @bind-Value="nyInleverans.Leveransdatum"></InputDate>
+            </NyRegistreringFält>
+            <NyRegistreringFält Beskrivning="Leverantör">
+                <InputSelect class="form-select" @bind-Value="nyInleverans.LeverantörId">
+                    @foreach (var leverantör in Leverantörer)
+                    {
+                        <option value="@leverantör.LeverantörId">@leverantör.Namn</option>
+                    }
+                </InputSelect>
+            </NyRegistreringFält>
+            <NyRegistreringFält Beskrivning="Kvantitet vial">
+                <InputNumber class="form-control" @bind-Value="nyInleverans.KvantitetVial"></InputNumber>
+            </NyRegistreringFält>
+            <NyRegistreringFält Beskrivning="GLN-mottagare">
+                <InputText class="form-control" @bind-Value="nyInleverans.GlnMottagare"></InputText>
+            </NyRegistreringFält>
+            <NyRegistreringFält Beskrivning="">
+            </NyRegistreringFält>
+
+            <div class="mt-2 d-flex justify-content-end">
+                <div>
+                    <button type="submit" class="btn btn-outline-primary"><i class="bi bi-plus"></i> Spara</button>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+    @if(inleveranser != null){
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Vårdgivare</th>
+                    <th>Planerat lev datum</th>
+                    <th>Leveransdatum</th>
+                    <th>Mottagare, GLN</th>
+                    <th>Kvantitet vial</th>
+                </tr>
+            </thead>
+            <tbody>
+        @foreach (var inleverans in inleveranser)
+        {
+            <tr>
+                <td>@inleverans.Vårdgivare.Namn</td>
+                <td>@inleverans.PlaneratLeveransdatum?.ToString("d")</td>
+                <td>@inleverans.Leveransdatum?.ToString("d")</td>
+                <td>@inleverans.GlnMottagare</td>
+                <td>@inleverans.KvantitetVial</td>
+            </tr>
+        }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    Inleverans nyInleverans = new();
+    Inleverans[] inleveranser;
+    public bool loading = true;
+    public Leverantör[] Leverantörer { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetLeverantörer();
+        await GetInleveranser();
+        loading = false;
+    }
+    public async Task SkapaInleverans() {
+        await client.PostInleverans(nyInleverans);
+        nyInleverans = new();
+        await GetInleveranser();
+    }
+
+    public async Task GetInleveranser(){
+        inleveranser = await client.GetInleveranser();
+    }
+
+    public async Task GetLeverantörer()
+    {
+        Leverantörer = await client.GetLeverantörer();
+    }
+}

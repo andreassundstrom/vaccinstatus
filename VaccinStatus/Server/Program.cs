@@ -17,6 +17,21 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
+    try
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            using (var db_context = scope.ServiceProvider.GetService<VaccinStatusContext>())
+            {
+                db_context.Database.Migrate();
+            }
+        }
+    }
+    catch
+    {
+        app.Logger.LogError("Kunde inte skapa databasen");
+    }
+  
 }
 else
 {

@@ -25,5 +25,10 @@ namespace VaccinStatus.Client.Services
         {
             await _httpClient.DeleteAsync($"api/leverantör/{leverantörId}");
         }
+
+        public async Task PutLeverantörAsync(Leverantör leverantör)
+        {
+            await _httpClient.PutAsJsonAsync<Leverantör>($"api/leverantör/{leverantör.LeverantörId}", leverantör);
+        }
     }
 }

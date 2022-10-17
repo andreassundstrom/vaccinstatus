@@ -1,7 +1,7 @@
 ﻿@page "/konfiguration/vardgivare"
 @inject VaccinStatusClient client
 <KonfigureraNav />
-<EditForm class="mt-4" Model="nyVårdgivare" OnValidSubmit="SkapaVårdgivare">
+<EditForm class="my-4" Model="nyVårdgivare" OnValidSubmit="SkapaVårdgivare">
     <div class="row">
         <div class="col-8">
             <InputText class="form-control" @bind-Value="nyVårdgivare.Namn" />
@@ -21,8 +21,8 @@ else{
             {
                 <tr>
                     <td>@vårdgivare.Namn</td>
-                    <td>
-                        <button @onclick="() => RaderaVårdgivare(vårdgivare.VårdgivareId)" class="btn btn-outline-dark"><i class="bi bi-trash"></i></button>
+                    <td class="d-flex justify-content-end">
+                        <button @onclick="() => RaderaVårdgivare(vårdgivare.VårdgivareId)" class=" me-2 btn btn-outline-dark"><i class="bi bi-trash"></i></button>
                         <button class="btn btn-outline-dark"><i class="bi bi-pencil-square"></i></button>
                     </td>
                 </tr>

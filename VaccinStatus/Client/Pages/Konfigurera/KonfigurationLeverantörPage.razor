@@ -1,6 +1,101 @@
-﻿@page "/konfiguration/leverantor"
+﻿@inject NavigationManager navigate
+@page "/konfiguration/leverantor/{leverantorId:int?}"
 <KonfigureraNav />
-<Leverantörkonfiguration />
-@code {
+@inject VaccinStatusClient client
+<Modal OnCloseClick="NavigateHome"
+    ModalId="EditModal" Title="Redigera leverantör" Show=leverantorId.HasValue>
+    <Body>
+        @if (RedigeraLeverantör != null)
+        {
+            <EditForm Model="RedigeraLeverantör" OnValidSubmit="@(async () => await UppdateraLeverantör())">
+                <InputText class="form-control" @bind-Value="RedigeraLeverantör.Namn" />
+                <div class="d-flex mt-4 justify-content-end">
+                <button type="submit" class="btn btn-outline-primary"><i class="bi bi-plus"></i>Spara</button>
+                </div>
+            </EditForm>
+        }
+    </Body>
+</Modal>
+@if (Leverantörer == null)
+{
+    <p>Laddar...</p>
+}
+else
+{
+    <EditForm class="my-4" Model="@NyLeverantör" OnValidSubmit="SkapaNyLeverantör">
+        <div class="row">
+            <div class="col-8">
+                <InputText id="nyLeverantörNamn" class="form-control" @bind-Value=NyLeverantör.Namn></InputText>
+            </div>
+            <div class="col-4">
+                <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-plus"></i>Spara</button>
+            </div>
+        </div>
+    </EditForm>
 
+    <table class="table">
+        <tbody>
+            @foreach (var leverantör in Leverantörer)
+            {
+                <tr>
+                    <td>@leverantör.Namn</td>
+                    <td class="d-flex justify-content-end">
+                        <button @onclick="() => TaBortLeverantör(leverantör.LeverantörId)" class=" me-2 btn btn-outline-dark"><i class="bi bi-trash"></i></button>
+                        <a href="/konfiguration/leverantor/@leverantör.LeverantörId" class="btn btn-outline-dark">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+
+}
+@code {
+    [Parameter]
+    public int? leverantorId { get; set; }
+    public Leverantör RedigeraLeverantör;
+    public Leverantör[]? Leverantörer { get; set; }
+    public Leverantör NyLeverantör { get; set; } = new Leverantör();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await HämtaLeverantörer();
+        if(leverantorId.HasValue){
+            var valdLeverantör = Leverantörer.Single(p => p.LeverantörId == leverantorId);
+            RedigeraLeverantör = new Leverantör
+                {
+                    LeverantörId = valdLeverantör.LeverantörId,
+                    Namn = valdLeverantör.Namn
+                };
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+    }
+    private async Task HämtaLeverantörer()
+    {
+        Leverantörer = await client.GetLeverantörer();
+    }
+    private async Task TaBortLeverantör(int leverantörId)
+    {
+        await client.DeleteLeverantör(leverantörId);
+        await HämtaLeverantörer();
+    }
+    private async Task SkapaNyLeverantör()
+    {
+        await client.PostLeverantör(NyLeverantör);
+        NyLeverantör = new Leverantör();
+        await HämtaLeverantörer();
+    }
+    private void NavigateHome(){
+        navigate.NavigateTo("/konfiguration/leverantor", false);
+    }
+
+    private async Task UppdateraLeverantör(){
+
+        await client.PutLeverantörAsync(RedigeraLeverantör);
+        NavigateHome();
+    }
 }
